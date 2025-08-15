@@ -13,8 +13,8 @@ cp env.example .env
 # Edit .env with your actual API keys
 
 # Run evaluation
-python main.py --model gemini --dataset data/dev_testset.json
-python main.py --model groq --dataset data/dev_testset.json
+python main.py --model gemini --dataset path_to_dataset
+python main.py --model groq --dataset path_to_dataset
 ```
 
 
@@ -22,15 +22,6 @@ python main.py --model groq --dataset data/dev_testset.json
 - `--model, -m`: Model to evaluate (`gemini` or `groq`)
 - `--dataset, -d`: Path to dataset JSON file
 
-## Project Structure
-
-```
-src/
-├── config/          # API configurations
-├── models/          # Model evaluators
-├── prompts/         # Evaluation prompts
-└── utils/           # Utility functions
-```
 
 ## Configuration
 
@@ -41,5 +32,9 @@ src/
    GROQ_API_KEY=your_actual_groq_key
    ```
 3. The `.env` file is automatically ignored by git for security
+
+##Prompts
+
+You can edit `prompt.py` to change the the prompt input to the LLM.
 
 

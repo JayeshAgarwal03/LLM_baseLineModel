@@ -2,7 +2,7 @@
 # UNIFIED PROMPT TEMPLATE
 # -------------------------------
 
-CLASSIFICATION_PROMPT_TEMPLATE = """
+CLASSIFICATION_PROMPT = """
 You are evaluating a tutor's reply to a student's question. Your task is to make **two separate judgments** based on the conversation history and tutor's response:
 
 1. Mistake Identification: Did the tutor correctly identify the student's mistake?  

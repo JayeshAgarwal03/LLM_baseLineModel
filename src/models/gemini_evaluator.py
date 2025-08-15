@@ -10,7 +10,7 @@ from src.config.gemini_config import (
     VALID_LABELS,
     NUM_CONVERSATIONS_TO_PROCESS
 )
-from src.prompts.prompt import CLASSIFICATION_PROMPT_TEMPLATE
+from src.prompts.prompt import CLASSIFICATION_PROMPT
 from src.utils.metrics import display_performance_metrics
 
 # Initialize Gemini API
@@ -42,7 +42,7 @@ def classify_with_gemini(conversation_history, tutor_response):
     """
     model = genai.GenerativeModel(MODEL_NAME)
 
-    prompt = CLASSIFICATION_PROMPT_TEMPLATE.format(
+    prompt = CLASSIFICATION_PROMPT.format(
         conversation_history=conversation_history,
         tutor_response=tutor_response,
     )

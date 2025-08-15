@@ -9,7 +9,7 @@ from src.config.groq_config import (
     VALID_LABELS, 
     NUM_CONVERSATIONS_TO_PROCESS
 )
-from src.prompts.prompt import CLASSIFICATION_PROMPT_TEMPLATE
+from src.prompts.prompt import CLASSIFICATION_PROMPT
 from src.utils.metrics import display_performance_metrics
 
 # Initialize Groq client
@@ -39,7 +39,7 @@ def classify_with_llama(conversation_history, tutor_response):
     Classifies a tutor's response using the configured model on Groq.
     Returns a tuple: (mistake_identification_label, providing_guidance_label)
     """
-    prompt = CLASSIFICATION_PROMPT_TEMPLATE.format(
+    prompt = CLASSIFICATION_PROMPT.format(
         conversation_history=conversation_history,
         tutor_response=tutor_response,
     )

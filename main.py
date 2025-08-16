@@ -8,6 +8,7 @@ load_dotenv()
 # Import evaluators
 from src.models.gemini_evaluator import run_gemini_evaluation
 from src.models.groq_evaluator import run_groq_evaluation
+from src.models.local_evaluator import run_local_evaluation
 
 # -------------------------------
 # MAIN CONTROLLER
@@ -18,9 +19,9 @@ from src.models.groq_evaluator import run_groq_evaluation
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='LLM Baseline Model Evaluation')
     parser.add_argument('--model', '-m', 
-                       choices=['gemini', 'groq'], 
+                       choices=['gemini', 'groq', 'local'], 
                        required=True,
-                       help='Choose which model to evaluate: gemini or groq')
+                       help='Choose which model to evaluate: gemini, groq, or local')
     parser.add_argument('--dataset', '-d',
                        required=True,
                        help='Path to the dataset JSON file')
@@ -35,6 +36,8 @@ if __name__ == "__main__":
         run_gemini_evaluation(args.dataset)
     elif args.model.lower() == 'groq':
         run_groq_evaluation(args.dataset)
+    elif args.model.lower() == 'local':
+        run_local_evaluation(args.dataset)
     else:
         print(f"Invalid model choice: {args.model}")
-        print("Please choose 'gemini' or 'groq'")
+        print("Please choose 'gemini', 'groq', or 'local'")

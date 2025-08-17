@@ -7,25 +7,19 @@ from src.config.local_config import (
     MODEL_NAME,
     TEMPERATURE,
     MAX_NEW_TOKENS,
-    TIMEOUT,
     VALID_LABELS,
     NUM_CONVERSATIONS_TO_PROCESS,
     USE_GPU,
     TORCH_DTYPE
 )
-from src.prompts.prompt import CLASSIFICATION_PROMPT
-from src.prompts.tinyllama_prompt import TINYLLAMA_CLASSIFICATION_PROMPT, TINYLLAMA_SIMPLE_PROMPT, TINYLLAMA_ULTRA_SIMPLE_PROMPT
+from src.prompts.tinyllama_prompt import TINYLLAMA_SIMPLE_PROMPT
 from src.utils.metrics import display_performance_metrics
 
-# Global variables for model and tokenizer
 model = None
 tokenizer = None
 device = None
 
-def initialize_local_model():
-    """
-    Initialize the local model and tokenizer
-    """
+def initialize_tinyllama_model():
     global model, tokenizer, device
     
     print(f"🚀 GPU Available: {torch.cuda.is_available()}")
@@ -36,41 +30,34 @@ def initialize_local_model():
     else:
         device = "cpu"
         torch_dtype = torch.float32
-        print("⚠️ Using CPU mode")
+        print("Using CPU mode")
 
     print(f"📦 Loading {MODEL_NAME}...")
     
     try:
-        # Load tokenizer
         tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
 
-        # Load model
         if device == "cuda":
             model = AutoModelForCausalLM.from_pretrained(
                 MODEL_NAME,
                 torch_dtype=torch_dtype,
                 device_map="auto"
             )
-            print("✅ Loaded on GPU")
+            print("Loaded on GPU")
         else:
             model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
-            print("✅ Loaded on CPU")
+            print("Loaded on CPU")
 
         if torch.cuda.is_available():
-            print(f"📊 Memory: ~{torch.cuda.memory_allocated()/1024**3:.1f}GB")
+            print(f"Memory: ~{torch.cuda.memory_allocated()/1024**3:.1f}GB")
             
     except Exception as e:
-        print(f"❌ Error loading model: {e}")
+        print(f"Error loading model: {e}")
         raise
 
-def parse_local_output(text):
-    """
-    Parse output like:
-    Mistake Identification: Yes
-    Providing Guidance: To some extent
-    """
+def parse_tinyllama_output(text):
     mi_label = None
     pg_label = None
     lines = text.strip().split('\n')
@@ -80,44 +67,34 @@ def parse_local_output(text):
         elif line.startswith("Providing Guidance:"):
             pg_label = line.split(":", 1)[1].strip()
     
-    # Clean up common formatting issues
     if mi_label:
-        mi_label = mi_label.strip('"\'()').strip()  # Remove quotes and parentheses
+        mi_label = mi_label.strip('"\'()').strip()
     if pg_label:
-        pg_label = pg_label.strip('"\'()').strip()  # Remove quotes and parentheses
+        pg_label = pg_label.strip('"\'()').strip()
     
     return mi_label, pg_label
 
-def classify_with_local_model(conversation_history, tutor_response):
-    """
-    Classifies a tutor's response using the local model.
-    Returns a tuple: (mistake_identification_label, providing_guidance_label)
-    """
+def classify_with_tinyllama(conversation_history, tutor_response):
     global model, tokenizer, device
     
     if model is None or tokenizer is None:
-        raise ValueError("Model not initialized. Call initialize_local_model() first.")
+        raise ValueError("Model not initialized. Call initialize_tinyllama_model() first.")
 
-    # Use simpler TinyLlama prompt for better instruction following
     prompt = TINYLLAMA_SIMPLE_PROMPT.format(
         conversation_history=conversation_history,
         tutor_response=tutor_response,
     )
     
-    # Format for TinyLlama chat format
     formatted_prompt = f"<|system|>\nYou are a helpful assistant.</s>\n<|user|>\n{prompt}</s>\n<|assistant|>\n"
     
     try:
         print(f"  > Waiting for local model to classify...")
         
-        # Tokenize
         inputs = tokenizer(formatted_prompt, return_tensors="pt", truncation=True, max_length=4096)
         
-        # Move to device if needed
         if device == "cuda":
             inputs = {k: v.to(device) for k, v in inputs.items()}
         
-        # Generate
         start_time = time.time()
         with torch.no_grad():
             outputs = model.generate(
@@ -130,24 +107,18 @@ def classify_with_local_model(conversation_history, tutor_response):
             )
         end_time = time.time()
         
-        # Decode response
         response = tokenizer.decode(outputs[0][inputs['input_ids'].shape[1]:], skip_special_tokens=True)
         
-        # DEBUG: Print the raw model output
         print(f"  🔍 Raw model output:")
         print(f"  '{response}'")
         print(f"  🔍 End of raw output")
         
-        # Parse the output
-        mi_label, pg_label = parse_local_output(response)
+        mi_label, pg_label = parse_tinyllama_output(response)
         
-        # DEBUG: Print parsing results
-        print(f"  🔍 Parsed labels - MI: '{mi_label}', PG: '{pg_label}'")
+        print(f"  �� Parsed labels - MI: '{mi_label}', PG: '{pg_label}'")
         
-        # Fallback parsing if first attempt failed
         if mi_label is None or pg_label is None:
             print(f"  🔍 Attempting fallback parsing...")
-            # Try to find any Yes/No/To some extent in the text
             text_lower = response.lower()
             if 'yes' in text_lower and mi_label is None:
                 mi_label = 'Yes'
@@ -163,7 +134,6 @@ def classify_with_local_model(conversation_history, tutor_response):
             if 'to some extent' in text_lower and pg_label is None:
                 pg_label = 'To some extent'
         
-        # Validate labels
         if mi_label not in VALID_LABELS:
             print(f"Warning: Mistake Identification label invalid: '{mi_label}'")
             mi_label = "Error"
@@ -171,7 +141,6 @@ def classify_with_local_model(conversation_history, tutor_response):
             print(f"Warning: Providing Guidance label invalid: '{pg_label}'")
             pg_label = "Error"
         
-        # Print generation stats
         tokens_generated = len(outputs[0]) - len(inputs['input_ids'][0])
         speed = tokens_generated / (end_time - start_time) if (end_time - start_time) > 0 else 0
         print(f"  ⏱️ {end_time - start_time:.2f}s | ⚡ {speed:.1f} tok/s")
@@ -182,18 +151,13 @@ def classify_with_local_model(conversation_history, tutor_response):
         print(f"An error occurred while calling local model: {e}")
         return "Error", "Error"
 
-def run_local_evaluation(dataset_path):
-    """
-    Run evaluation using local model
-    """
+def run_tinyllama_evaluation(dataset_path):
     print("\n" + "="*60)
-    print("RUNNING LOCAL MODEL EVALUATION")
+    print("RUNNING TINYLLAMA MODEL EVALUATION")
     print("="*60)
     
-    # Initialize the model
-    initialize_local_model()
+    initialize_tinyllama_model()
     
-    # Load the dataset
     try:
         with open(dataset_path, 'r') as f:
             dev_data = json.load(f)
@@ -214,14 +178,12 @@ def run_local_evaluation(dataset_path):
         for tutor_name, response_data in tutor_responses.items():
             tutor_response_text = response_data['response']
 
-            # Ground truth
             true_mi = response_data['annotation']['Mistake_Identification']
             true_pg = response_data['annotation']['Providing_Guidance']
             true_labels_mi.append(true_mi)
             true_labels_pg.append(true_pg)
 
-            # Single prediction returning both labels
-            pred_mi, pred_pg = classify_with_local_model(
+            pred_mi, pred_pg = classify_with_tinyllama(
                 conversation_history,
                 tutor_response_text
             )
@@ -234,5 +196,4 @@ def run_local_evaluation(dataset_path):
             print(f"Guidance   -> True: {true_pg}, Predicted: {pred_pg}")
             print("-" * 20)
 
-    # Performance metrics
-    display_performance_metrics(true_labels_mi, predicted_labels_mi, true_labels_pg, predicted_labels_pg, "Local Model")
+    display_performance_metrics(true_labels_mi, predicted_labels_mi, true_labels_pg, predicted_labels_pg, "TinyLlama Model")

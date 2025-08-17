@@ -1,6 +1,6 @@
 # LLM Baseline Model Evaluation
 
-Automated evaluation of LLM models for tutor response classification using Gemini, Groq APIs, and local models.
+Automated evaluation of LLM models for tutor response classification using Gemini, Groq APIs, and TinyLlama.
 
 ## Quick Start
 
@@ -15,14 +15,12 @@ cp env.example .env
 # Run evaluation
 python main.py --model gemini --dataset path_to_dataset
 python main.py --model groq --dataset path_to_dataset
-python main.py --model local --dataset path_to_dataset
+python main.py --model tinyllama --dataset path_to_dataset
 ```
 
-
 **Arguments:**
-- `--model, -m`: Model to evaluate (`gemini`, `groq`, or `local`)
+- `--model, -m`: Model to evaluate (`gemini`, `groq`, or `tinyllama`)
 - `--dataset, -d`: Path to dataset JSON file
-
 
 ## Configuration
 
@@ -35,21 +33,13 @@ python main.py --model local --dataset path_to_dataset
    ```
 3. The `.env` file is automatically ignored by git for security
 
-### Local Model
-The local model uses TinyLlama by default and doesn't require API keys. You can configure it in `src/config/local_config.py`:
+### TinyLlama Model
+The TinyLlama model uses TinyLlama-1.1B-Chat by default and doesn't require API keys. You can configure it in `src/config/local_config.py`:
 - `MODEL_NAME`: Change the model (default: "TinyLlama/TinyLlama-1.1B-Chat-v1.0")
 - `USE_GPU`: Set to `False` to force CPU usage
 - `TORCH_DTYPE`: Use "float32" for CPU or if you have memory issues
 
-## Testing
-
-You can test the local model functionality with:
-```bash
-python test_local_model.py
-```
 
 ## Prompts
 
 You can edit `prompt.py` to change the prompt input to the LLM.
-
-

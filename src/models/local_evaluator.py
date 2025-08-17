@@ -14,6 +14,7 @@ from src.config.local_config import (
     TORCH_DTYPE
 )
 from src.prompts.prompt import CLASSIFICATION_PROMPT
+from src.prompts.tinyllama_prompt import TINYLLAMA_CLASSIFICATION_PROMPT, TINYLLAMA_SIMPLE_PROMPT
 from src.utils.metrics import display_performance_metrics
 
 # Global variables for model and tokenizer
@@ -90,8 +91,8 @@ def classify_with_local_model(conversation_history, tutor_response):
     if model is None or tokenizer is None:
         raise ValueError("Model not initialized. Call initialize_local_model() first.")
 
-    # Format prompt for TinyLlama
-    prompt = CLASSIFICATION_PROMPT.format(
+    # Use TinyLlama-specific prompt for better instruction following
+    prompt = TINYLLAMA_CLASSIFICATION_PROMPT.format(
         conversation_history=conversation_history,
         tutor_response=tutor_response,
     )
@@ -125,8 +126,16 @@ def classify_with_local_model(conversation_history, tutor_response):
         # Decode response
         response = tokenizer.decode(outputs[0][inputs['input_ids'].shape[1]:], skip_special_tokens=True)
         
+        # DEBUG: Print the raw model output
+        print(f"  🔍 Raw model output:")
+        print(f"  '{response}'")
+        print(f"  🔍 End of raw output")
+        
         # Parse the output
         mi_label, pg_label = parse_local_output(response)
+        
+        # DEBUG: Print parsing results
+        print(f"  🔍 Parsed labels - MI: '{mi_label}', PG: '{pg_label}'")
         
         # Validate labels
         if mi_label not in VALID_LABELS:

@@ -29,3 +29,10 @@ Providing Guidance: [Yes/No/To some extent]
 
 Conversation: {conversation_history}
 Tutor: {tutor_response}"""
+
+# Ultra-simple prompt for TinyLlama
+TINYLLAMA_ULTRA_SIMPLE_PROMPT = """Format: Mistake Identification: Yes/No/To some extent
+Format: Providing Guidance: Yes/No/To some extent
+
+{conversation_history}
+{tutor_response}"""

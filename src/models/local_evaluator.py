@@ -14,7 +14,7 @@ from src.config.local_config import (
     TORCH_DTYPE
 )
 from src.prompts.prompt import CLASSIFICATION_PROMPT
-from src.prompts.tinyllama_prompt import TINYLLAMA_CLASSIFICATION_PROMPT, TINYLLAMA_SIMPLE_PROMPT
+from src.prompts.tinyllama_prompt import TINYLLAMA_CLASSIFICATION_PROMPT, TINYLLAMA_SIMPLE_PROMPT, TINYLLAMA_ULTRA_SIMPLE_PROMPT
 from src.utils.metrics import display_performance_metrics
 
 # Global variables for model and tokenizer
@@ -79,6 +79,13 @@ def parse_local_output(text):
             mi_label = line.split(":", 1)[1].strip()
         elif line.startswith("Providing Guidance:"):
             pg_label = line.split(":", 1)[1].strip()
+    
+    # Clean up common formatting issues
+    if mi_label:
+        mi_label = mi_label.strip('"\'()').strip()  # Remove quotes and parentheses
+    if pg_label:
+        pg_label = pg_label.strip('"\'()').strip()  # Remove quotes and parentheses
+    
     return mi_label, pg_label
 
 def classify_with_local_model(conversation_history, tutor_response):
@@ -91,8 +98,8 @@ def classify_with_local_model(conversation_history, tutor_response):
     if model is None or tokenizer is None:
         raise ValueError("Model not initialized. Call initialize_local_model() first.")
 
-    # Use TinyLlama-specific prompt for better instruction following
-    prompt = TINYLLAMA_CLASSIFICATION_PROMPT.format(
+    # Use simpler TinyLlama prompt for better instruction following
+    prompt = TINYLLAMA_SIMPLE_PROMPT.format(
         conversation_history=conversation_history,
         tutor_response=tutor_response,
     )
@@ -136,6 +143,25 @@ def classify_with_local_model(conversation_history, tutor_response):
         
         # DEBUG: Print parsing results
         print(f"  🔍 Parsed labels - MI: '{mi_label}', PG: '{pg_label}'")
+        
+        # Fallback parsing if first attempt failed
+        if mi_label is None or pg_label is None:
+            print(f"  🔍 Attempting fallback parsing...")
+            # Try to find any Yes/No/To some extent in the text
+            text_lower = response.lower()
+            if 'yes' in text_lower and mi_label is None:
+                mi_label = 'Yes'
+            if 'no' in text_lower and mi_label is None:
+                mi_label = 'No'
+            if 'to some extent' in text_lower and mi_label is None:
+                mi_label = 'To some extent'
+                
+            if 'yes' in text_lower and pg_label is None:
+                pg_label = 'Yes'
+            if 'no' in text_lower and pg_label is None:
+                pg_label = 'No'
+            if 'to some extent' in text_lower and pg_label is None:
+                pg_label = 'To some extent'
         
         # Validate labels
         if mi_label not in VALID_LABELS:

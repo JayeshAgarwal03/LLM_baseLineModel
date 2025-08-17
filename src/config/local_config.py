@@ -2,8 +2,8 @@ import os
 
 # Local model configuration
 MODEL_NAME = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"  # Default model, can be overridden
-TEMPERATURE = 0.7
-MAX_NEW_TOKENS = 150
+TEMPERATURE = 0.1  # Lower temperature for more consistent outputs
+MAX_NEW_TOKENS = 50  # Shorter outputs to prevent long explanations
 TIMEOUT = 30  # Timeout for generation in seconds
 
 VALID_LABELS = ['Yes', 'No', 'To some extent']

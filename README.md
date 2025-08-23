@@ -1,6 +1,6 @@
 # LLM Baseline Model Evaluation
 
-Automated evaluation of LLM models for tutor response classification using Gemini, Groq APIs, and TinyLlama.
+Automated evaluation of LLM models for tutor response classification using Gemini, Groq APIs, TinyLLama and HuggingFace.
 
 ## Quick Start
 
@@ -16,10 +16,11 @@ cp env.example .env
 python main.py --model gemini --dataset path_to_dataset
 python main.py --model groq --dataset path_to_dataset
 python main.py --model tinyllama --dataset path_to_dataset
+python main.py --model huggingface --dataset path_to_dataset
 ```
 
 **Arguments:**
-- `--model, -m`: Model to evaluate (`gemini`, `groq`, or `tinyllama`)
+- `--model, -m`: Model to evaluate (`gemini`, `groq`, `tinyllama`, or `huggingface`)
 - `--dataset, -d`: Path to dataset JSON file
 
 ## Configuration
@@ -30,16 +31,18 @@ python main.py --model tinyllama --dataset path_to_dataset
    ```
    GOOGLE_API_KEY=your_actual_gemini_key
    GROQ_API_KEY=your_actual_groq_key
+   HF_TOKEN=your_actual_hf_token
    ```
 3. The `.env` file is automatically ignored by git for security
 
-### TinyLlama Model
-The TinyLlama model uses TinyLlama-1.1B-Chat by default and doesn't require API keys. You can configure it in `src/config/local_config.py`:
-- `MODEL_NAME`: Change the model (default: "TinyLlama/TinyLlama-1.1B-Chat-v1.0")
-- `USE_GPU`: Set to `False` to force CPU usage
-- `TORCH_DTYPE`: Use "float32" for CPU or if you have memory issues
 
+### Hugging Face Model
+The Hugging Face model uses `google/gemma-2-2b-it` by default. You can configure it in `src/config/hugging_face_config.py`:
+- `HF_TOKEN`: Set your Hugging Face API token in the `.env` file or directly in the config if not using an environment variable.
+- `MODEL_NAME`: Change the model (default: "google/gemma-2-2b-it", also supports "mistralai/Mistral-7B-Instruct-v0.3" and "meta-llama/Llama-3.3-70B-Instruct")
+- `MAX_CONVERSATIONS`: Adjust the maximum number of conversation turns to keep in memory (default: 10)
+- `MAX_NEW_TOKENS`: Set the maximum number of new tokens to generate in the model's response (default: 100)
 
 ## Prompts
 
-You can edit `prompt.py` to change the prompt input to the LLM.
+You can edit `prompt.py`

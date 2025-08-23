@@ -7,13 +7,14 @@ load_dotenv()
 from src.models.gemini_evaluator import run_gemini_evaluation
 from src.models.groq_evaluator import run_groq_evaluation
 from src.models.TinyLlama_evaluator import run_tinyllama_evaluation
+from src.models.hugging_face_evaluator import run_huggingface_evaluation # Import the new function
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='LLM Baseline Model Evaluation')
     parser.add_argument('--model', '-m', 
-                       choices=['gemini', 'groq', 'tinyllama'], 
+                       choices=['gemini', 'groq', 'tinyllama', 'huggingface'], 
                        required=True,
-                       help='Choose which model to evaluate: gemini, groq, or tinyllama')
+                       help='Choose which model to evaluate: gemini, groq, tinyllama, or huggingface')
     parser.add_argument('--dataset', '-d',
                        required=True,
                        help='Path to the dataset JSON file')
@@ -30,6 +31,8 @@ if __name__ == "__main__":
         run_groq_evaluation(args.dataset)
     elif args.model.lower() == 'tinyllama':
         run_tinyllama_evaluation(args.dataset)
+    elif args.model.lower() == 'huggingface':
+        run_huggingface_evaluation(args.dataset) # Call the new function
     else:
         print(f"Invalid model choice: {args.model}")
-        print("Please choose 'gemini', 'groq', or 'tinyllama'")
+        print("Please choose 'gemini', 'groq', 'tinyllama', or 'huggingface'")

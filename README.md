@@ -4,15 +4,18 @@ Automated evaluation of LLM models for tutor response classification using Gemin
 
 ## Quick Start
 
+### Install dependencies
 ```bash
-# Install dependencies
 pip install -r requirements.txt
+```
 
-# Set up environment variables
-cp env.example .env
-# Edit .env with your actual API keys
+### Set up environment variables
+```bash
+cp env.example .env    # Edit .env with your actual API keys
+```
 
-# Run evaluation
+### Run evaluation
+```bash
 python main.py --model gemini --dataset path_to_dataset
 python main.py --model groq --dataset path_to_dataset
 python main.py --model huggingface --dataset path_to_dataset

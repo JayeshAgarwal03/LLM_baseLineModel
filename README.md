@@ -37,7 +37,7 @@ python main.py --model huggingface --dataset path_to_dataset
 
 ### Hugging Face Model
 The Hugging Face model uses `google/gemma-2-2b-it` by default. You can configure it in `src/config/hugging_face_config.py`:
-- `HF_TOKEN`: Go to this link: https://huggingface.co/settings/tokens and generate your own hugging face token. You'll might get a mail for approving the terms and conditions. After accepting it, set the token in the `.env` file or directly in the config if not using an environment variable.
+- `HF_TOKEN`: Go to this link: https://huggingface.co/settings/tokens and generate your own hugging face token. You'll have to agree to the terms and conditions. After accepting it, set the token in the `.env` file or directly in the config if not using an environment variable.
 - `MODEL_NAME`: Change the model (default: "google/gemma-2-2b-it", also supports "mistralai/Mistral-7B-Instruct-v0.3" and "meta-llama/Llama-3.3-70B-Instruct")
 - `MAX_CONVERSATIONS`: Adjust the maximum number of conversation turns to keep in memory (default: 5)
 - `MAX_NEW_TOKENS`: Set the maximum number of new tokens to generate in the model's response (default: 100)

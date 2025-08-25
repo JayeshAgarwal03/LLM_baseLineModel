@@ -7,11 +7,6 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from src.config.hugging_face_config import MODEL_NAME, HF_TOKEN, MAX_CONVERSATIONS, MAX_NEW_TOKENS
 from src.prompts.huggingFace_prompts import HUGGINGFACE_PROMPT
 from src.utils.metrics import display_performance_metrics
-# If running on Google Colab, uncomment the following lines:
-# import torch._dynamo
-# torch._dynamo.config.suppress_errors = True
-# torch._dynamo.config.cache_size_limit = 128  # or higher, e.g. 512
-# torch._dynamo.reset()  # clear old graphs
 
 load_dotenv()
 
@@ -20,15 +15,16 @@ class HuggingFaceEvaluator:
         token = HF_TOKEN
         if not token:
             raise ValueError("HF_TOKEN environment variable not set.")
-        
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=token)
+
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, token=token)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.float16,  
             device_map="auto",
-            use_auth_token=token
+            token=token
         )
         self.model.eval()
+
 
     def evaluate(self, conversation_history, tutor_response_text):
         prompt = HUGGINGFACE_PROMPT.format(
@@ -62,8 +58,6 @@ def run_huggingface_evaluation(dataset_path):
     except FileNotFoundError:
         print(f"Error: Dataset file not found at {dataset_path}")
         return
-
-    print("Loaded", len(data), "examples.")
     
     evaluator = HuggingFaceEvaluator()
     true_labels_mi, predicted_labels_mi = [], []

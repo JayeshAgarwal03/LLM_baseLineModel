@@ -8,6 +8,8 @@ Automated evaluation of LLM models for tutor response classification using Gemin
 ```bash
 # Clone the github repo
 !git clone https://github.com/JayeshAgarwal03/LLM_baseLineModel.git
+# Move into the repo
+%cd LLM_baseLineModel/
 # Install dependencies
 !pip install -r requirements.txt
 
